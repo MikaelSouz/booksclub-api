@@ -91,6 +91,52 @@ class UserController {
       return res.status(400).json({ error: error?.message });
     }
   }
+
+  async get(req, res) {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({ error: "Id não informado." });
+      }
+
+      const user = await User.findOne({
+        where: {
+          id: Number(req.userId),
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado." });
+      }
+
+      return res.json(user);
+    } catch (error) {
+      return res.status(400).json({ error: error?.message });
+    }
+  }
+
+  async forgotPassword(req, res) {
+    try {
+      const schema = Yup.object().shape({
+        email: Yup.string()
+          .email("Email inválido.")
+          .required("Email é obrigatório."),
+      });
+
+      await schema.validate(req.body);
+
+      const user = User.findOne({
+        where: {
+          email: req.body,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Email não está cadastrado." });
+      }
+    } catch (error) {
+      return res.status(400).json({ error: error?.message });
+    }
+  }
 }
 
 export default new UserController();

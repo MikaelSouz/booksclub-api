@@ -1,16 +1,14 @@
 import express from "express";
 import db from "./src/models";
+import routes from "./src/routes";
 import * as dotenv from "dotenv";
 dotenv.config();
-import UserController from "./src/controllers/user";
 
 const app = express();
 const port = 3333;
 
 app.use(express.json());
-
-app.post("/", UserController.create);
-app.post("/login", UserController.login);
+app.use(routes);
 
 app.listen(port, async () => {
   try {
