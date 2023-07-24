@@ -5,6 +5,8 @@ import UserController from "./src/controllers/user";
 const app = express();
 const port = 3333;
 
+app.use(express.json());
+
 app.post("/", UserController.create);
 
 app.listen(port, async () => {
