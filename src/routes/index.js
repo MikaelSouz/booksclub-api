@@ -3,6 +3,7 @@ import UserController from "../controllers/user";
 import authMiddleware from "../middlewares/auth";
 import CategoryController from "../controllers/category";
 import AuthorController from "../controllers/author";
+import BookController from "../controllers/book";
 
 const routes = new Router();
 
@@ -18,5 +19,7 @@ routes.get("/user", UserController.get);
 routes.get("/category", CategoryController.getAll);
 routes.post("/author", AuthorController.create);
 routes.get("/author", AuthorController.getAll);
+routes.post("/book", BookController.create);
+routes.get("/book", BookController.getAll);
 
 export default routes;
