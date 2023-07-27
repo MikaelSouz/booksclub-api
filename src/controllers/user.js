@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import Mail from "../libs/Mail";
 import { differenceInHours } from "date-fns";
 import * as dotenv from "dotenv";
+import UploadImage from "../libs/UploadImage";
 dotenv.config();
 
 class UserController {
@@ -89,6 +90,92 @@ class UserController {
       await user.save();
 
       return res.json({ user });
+    } catch (error) {
+      return res.status(400).json({ error: error?.message });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const schema = Yup.object().shape({
+        name: Yup.string().min(3, "Nome deve conter no mínimo 3 caracteres."),
+        email: Yup.string().email("Email inválido."),
+        password: Yup.string().min(
+          6,
+          "Senha deve conter no mínimo 6 caracteres"
+        ),
+      });
+
+      await schema.validate(req.body);
+      const user = await User.findByPk(req.userId);
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado." });
+      }
+      const { name, email, password } = req.body;
+
+      if (name) {
+        user.name = name;
+      }
+
+      if (email) {
+        user.email = email;
+      }
+
+      if (password) {
+        user.password_hash = await bcrypt.hash(password, 8);
+      }
+
+      await user.save();
+
+      return res.json(user);
+    } catch (error) {
+      return res.status(400).json({ error: error?.message });
+    }
+  }
+
+  async uploadAvatar(req, res) {
+    try {
+      const schema = Yup.object().shape({
+        base64: Yup.string().required("Base64 é obrigatório."),
+        mime: Yup.string().required("Mime é obrigatório."),
+      });
+
+      await schema.validate(req.body);
+      const { base64, mime } = req.body;
+
+      const user = await User.findByPk(req.userId);
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado." });
+      }
+
+      if (user.avatar_url) {
+        const splited = user.avatar_url.split("/");
+        const oldKey = splited[splited?.length - 1];
+
+        const deleteResponse = await UploadImage.delete(oldKey);
+
+        if (deleteResponse?.error) {
+          return res.status(500).json({ error: deleteResponse });
+        }
+      }
+
+      const key = `user_${user.id}_${new Date().getTime()}`;
+
+      const response = await UploadImage.upload(key, base64, mime);
+
+      if (response?.error) {
+        return res
+          .status(400)
+          .json({ error: "Erro ao fazer upload da imagem." });
+      }
+
+      await user.update({
+        avatar_url: response?.Location,
+      });
+
+      return res.json(user);
     } catch (error) {
       return res.status(400).json({ error: error?.message });
     }

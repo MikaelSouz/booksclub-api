@@ -18,9 +18,13 @@ routes.post("/reset-password", UserController.resetPassword);
 // ---- authenticated routes ---------------
 routes.use(authMiddleware);
 routes.get("/user", UserController.get);
+routes.put("/user", UserController.update);
+routes.put("/user/avatar", UserController.uploadAvatar);
+
 routes.get("/category", CategoryController.getAll);
 routes.post("/author", AuthorController.create);
 routes.get("/author", AuthorController.getAll);
+routes.get("/author/:id", AuthorController.get);
 routes.post("/book", BookController.create);
 routes.get("/book", BookController.getAll);
 routes.post("/userbook", UserBookController.create);

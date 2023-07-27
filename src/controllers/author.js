@@ -1,4 +1,4 @@
-import { Author } from "../models";
+import { Author, Book } from "../models";
 import * as Yup from "yup";
 
 class AuthorController {
@@ -32,6 +32,32 @@ class AuthorController {
       });
 
       return res.json(authors);
+    } catch (error) {
+      return res.status(400).json({ error: error?.message });
+    }
+  }
+
+  async get(req, res) {
+    const { id } = req.params;
+    try {
+      if (!id) {
+        return res.status(400).json({ error: "Id do autor é obrigatório." });
+      }
+
+      const author = await Author.findByPk(id, {
+        include: [
+          {
+            model: Book,
+            as: "book",
+          },
+        ],
+      });
+
+      if (!author) {
+        return res.status(404).json({ error: "Autor não encontrado." });
+      }
+
+      return res.json(author);
     } catch (error) {
       return res.status(400).json({ error: error?.message });
     }
